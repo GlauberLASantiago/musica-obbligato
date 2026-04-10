@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Musica Obbligato</title>
+    <title>Musica Obbligata</title>
     <!-- Favicon de nota musical adicionado abaixo -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎵</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -55,7 +55,7 @@
         <!-- CONTEÚDO 1: ADAPTADOR MUSICAL -->
         <div id="viewAdaptador" class="flex-1 overflow-y-auto p-6 md:p-8 fade-in">
             <div class="text-center mb-6">
-                <h2 class="text-2xl font-extrabold text-gray-900 mb-1">Musica Obbligato</h2>
+                <h2 class="text-2xl font-extrabold text-gray-900 mb-1">Musica Obbligata</h2>
                 <p class="text-gray-500 text-sm">Cole seu texto e a Inteligência Artificial irá reescrevê-lo usando apenas termos e metáforas musicais.</p>
             </div>
 
@@ -137,10 +137,6 @@
     </div>
 
     <script>
-        // --- CONFIGURAÇÕES GERAIS ---
-        // A chave da API foi removida daqui por segurança!
-        // Agora o frontend comunica com o nosso próprio backend na pasta /api
-
         // --- SISTEMA DE ABAS ---
         const viewAdaptador = document.getElementById('viewAdaptador');
         const viewMaestro = document.getElementById('viewMaestro');
@@ -152,21 +148,18 @@
                 viewAdaptador.classList.remove('hidden');
                 viewMaestro.classList.add('hidden');
                 
-                // Estilo da aba ativa
                 tabAdaptador.className = "flex-1 py-4 px-6 text-center font-bold text-cyan-700 border-b-2 border-cyan-500 bg-white transition-colors focus:outline-none flex items-center justify-center";
                 tabMaestro.className = "flex-1 py-4 px-6 text-center font-medium text-gray-500 hover:text-indigo-600 border-b-2 border-transparent bg-gray-50 transition-colors focus:outline-none flex items-center justify-center";
             } else {
                 viewAdaptador.classList.add('hidden');
                 viewMaestro.classList.remove('hidden');
                 
-                // Estilo da aba ativa
                 tabMaestro.className = "flex-1 py-4 px-6 text-center font-bold text-indigo-700 border-b-2 border-indigo-500 bg-white transition-colors focus:outline-none flex items-center justify-center";
                 tabAdaptador.className = "flex-1 py-4 px-6 text-center font-medium text-gray-500 hover:text-cyan-600 border-b-2 border-transparent bg-gray-50 transition-colors focus:outline-none flex items-center justify-center";
                 
                 document.getElementById('chatInput').focus();
             }
         }
-
 
         // --- LÓGICA DO ADAPTADOR MUSICAL ---
         const textInput = document.getElementById('textInput');
@@ -193,7 +186,7 @@
             document.getElementById('errorContainer').classList.add('hidden');
 
             try {
-                // Chamamos o NOSSO backend em vez de chamar a OpenRouter diretamente
+                // Comunicação feita de forma segura com o nosso backend no Vercel
                 const response = await fetch("/api/chat", {
                     method: "POST",
                     headers: {
@@ -210,7 +203,7 @@
                     })
                 });
 
-                if (!response.ok) throw new Error(`Erro de comunicação (${response.status})`);
+                if (!response.ok) throw new Error(`Erro de comunicação com o servidor (${response.status})`);
 
                 const data = await response.json();
                 if (data.choices && data.choices.length > 0) {
@@ -221,7 +214,7 @@
                     document.getElementById('phraseOutput').textContent = correctedText;
                     document.getElementById('resultContainer').classList.remove('hidden');
                 } else {
-                    throw new Error("Nenhuma adaptação retornada.");
+                    throw new Error("Nenhuma adaptação retornada pelo servidor.");
                 }
             } catch (error) {
                 document.getElementById('errorMessage').textContent = "Erro: " + error.message;
@@ -251,10 +244,7 @@
             document.body.removeChild(tempInput);
         }
 
-
         // --- LÓGICA DO CHATBOT DE MÚSICA (MAESTRO IA) ---
-        
-        // Histórico de conversas (para dar contexto à IA)
         let chatHistory = [
             {
                 "role": "system",
@@ -270,18 +260,14 @@
             
             if (!message) return;
             
-            // 1. Adicionar mensagem do usuário na tela
             appendMessageToUI(message, 'user');
             chatInput.value = '';
-            
-            // 2. Adicionar ao histórico
             chatHistory.push({ "role": "user", "content": message });
             
-            // 3. Mostrar carregamento e bloquear input
             setChatLoading(true);
             
             try {
-                // Chamamos o NOSSO backend em vez de chamar a OpenRouter diretamente
+                // Comunicação feita de forma segura com o nosso backend no Vercel
                 const response = await fetch("/api/chat", {
                     method: "POST",
                     headers: {
@@ -292,22 +278,19 @@
                     })
                 });
 
-                if (!response.ok) throw new Error(`Erro na API (${response.status})`);
+                if (!response.ok) throw new Error(`Erro no servidor (${response.status})`);
 
                 const data = await response.json();
                 
                 if (data.choices && data.choices.length > 0) {
                     const botReply = data.choices[0].message.content;
-                    
-                    // 4. Adicionar resposta ao histórico e na tela
                     chatHistory.push({ "role": "assistant", "content": botReply });
                     appendMessageToUI(botReply, 'bot');
                 } else {
                     throw new Error("Sem resposta do Maestro.");
                 }
             } catch (error) {
-                appendMessageToUI("Desculpe, meu violão desafinou (Erro de conexão). Pode tentar perguntar de novo?", 'error');
-                // Removemos a mensagem falhada do histórico para não quebrar conversas futuras
+                appendMessageToUI("Desculpe, meu violão desafinou (Erro de conexão com o servidor). Pode tentar perguntar de novo?", 'error');
                 chatHistory.pop(); 
             } finally {
                 setChatLoading(false);
@@ -346,8 +329,6 @@
 
             msgDiv.innerHTML = innerHTML;
             chatMessages.appendChild(msgDiv);
-            
-            // Fazer scroll automático para o fundo
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
@@ -369,7 +350,6 @@
             }
         }
 
-        // Função utilitária para evitar injeção de HTML no chat
         function escapeHTML(str) {
             return str.replace(/[&<>'"]/g, 
                 tag => ({
