@@ -70,13 +70,18 @@
             </button>
 
             <div id="resultContainer" class="mt-6 hidden fade-in">
-                <div class="flex justify-between items-end mb-2 ml-1">
-                    <label class="block text-sm font-medium text-cyan-700 flex items-center">
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                        Sinfonia Textual
-                    </label>
-                    <span id="infoModeloAdaptador" class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold"></span>
+                
+                <div class="mb-4 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-xl p-3 text-center shadow-md">
+                    <h3 class="text-lg font-extrabold text-white uppercase tracking-wider drop-shadow-sm flex items-center justify-center">
+                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                        IA Utilizada: <span id="infoModeloAdaptador" class="text-cyan-100 ml-2"></span>
+                    </h3>
                 </div>
+
+                <label class="block text-sm font-medium text-cyan-700 mb-2 ml-1 flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    Sinfonia Textual
+                </label>
                 
                 <div class="p-5 bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-100 rounded-xl shadow-sm">
                     <p id="phraseOutput" class="text-base text-gray-800 leading-relaxed whitespace-pre-wrap"></p>
@@ -206,9 +211,9 @@
                         correctedText = correctedText.substring(1, correctedText.length - 1);
                     }
                     
-                    // CAPTURANDO O NOME DO MODELO AQUI
+                    // Preenche o nome do modelo no novo título em destaque
                     const nomeDoModelo = data.model || 'Modelo Oculto';
-                    document.getElementById('infoModeloAdaptador').textContent = `IA: ${nomeDoModelo}`;
+                    document.getElementById('infoModeloAdaptador').textContent = nomeDoModelo;
 
                     document.getElementById('phraseOutput').textContent = correctedText;
                     document.getElementById('resultContainer').classList.remove('hidden');
@@ -282,13 +287,9 @@
                 
                 if (data.choices && data.choices.length > 0) {
                     const botReply = data.choices[0].message.content;
-                    
-                    // CAPTURANDO O NOME DO MODELO AQUI
                     const nomeDoModelo = data.model || null;
 
                     chatHistory.push({ "role": "assistant", "content": botReply });
-                    
-                    // Passamos o modelo para a função de desenhar a tela
                     appendMessageToUI(botReply, 'bot', nomeDoModelo);
                 } else {
                     throw new Error("Sem resposta do Maestro.");
@@ -301,7 +302,6 @@
             }
         }
 
-        // Adicionamos um terceiro parâmetro (modelName)
         function appendMessageToUI(text, sender, modelName = null) {
             const chatMessages = document.getElementById('chatMessages');
             const msgDiv = document.createElement('div');
@@ -316,15 +316,28 @@
                     </div>
                 `;
             } else if (sender === 'bot') {
+                // TÍTULO DO MODELO EM DESTAQUE DENTRO DO BALÃO
+                let modeloHeader = '';
+                if (modelName) {
+                    modeloHeader = `
+                        <div class="mb-3 pb-2 border-b-2 border-indigo-100">
+                            <h4 class="text-xs sm:text-sm font-extrabold text-indigo-700 uppercase tracking-wide flex items-center">
+                                <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                IA UTILIZADA: <span class="text-indigo-500 ml-1">${escapeHTML(modelName)}</span>
+                            </h4>
+                        </div>
+                    `;
+                }
+
                 innerHTML = `
                     <div class="flex-shrink-0 bg-indigo-100 rounded-full p-2 mr-3 border border-indigo-200 self-end h-10 w-10 flex items-center justify-center mb-4">
                         <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
                     </div>
                     <div class="flex flex-col max-w-[80%]">
-                        <div class="bg-white p-4 rounded-2xl rounded-tl-none shadow-sm border border-gray-100 text-sm text-gray-800 whitespace-pre-wrap">
+                        <div class="bg-white p-4 sm:p-5 rounded-2xl rounded-tl-none shadow-md border border-indigo-200 text-sm text-gray-800 whitespace-pre-wrap">
+                            ${modeloHeader}
                             ${escapeHTML(text)}
                         </div>
-                        ${modelName ? `<span class="text-[10px] text-gray-400 mt-1 ml-2 font-medium tracking-wide opacity-80">Respondido por: ${escapeHTML(modelName)}</span>` : ''}
                     </div>
                 `;
             } else if (sender === 'error') {
