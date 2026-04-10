@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Musica Obbligato</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Animação suave para a transição de opacidade */
+        .fade-in {
+            animation: fadeIn 0.4s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Estilizar a scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+        /* Garantir que o chat rola suavemente */
+        .chat-scroll {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-800 to-slate-900 min-h-screen flex flex-col items-center justify-center p-4 font-sans text-gray-800 antialiased">
+    
+    <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full flex flex-col overflow-hidden transition-all duration-300" style="height: 85vh; max-height: 800px;">
+        
+        <!-- Navegação / Abas -->
+        <div class="flex border-b border-gray-200 bg-gray-50">
+            <button id="tabAdaptador" onclick="switchTab('adaptador')" class="flex-1 py-4 px-6 text-center font-bold text-cyan-700 border-b-2 border-cyan-500 bg-white transition-colors focus:outline-none flex items-center justify-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                Adaptador Musical
+            </button>
+            <button id="tabMaestro" onclick="switchTab('maestro')" class="flex-1 py-4 px-6 text-center font-medium text-gray-500 hover:text-indigo-600 border-b-2 border-transparent transition-colors focus:outline-none flex items-center justify-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
+                Professor de Música
+            </button>
+        </div>
+
+        <!-- CONTEÚDO 1: ADAPTADOR MUSICAL -->
+        <div id="viewAdaptador" class="flex-1 overflow-y-auto p-6 md:p-8 fade-in">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-extrabold text-gray-900 mb-1">Musica Obbligato</h2>
+                <p class="text-gray-500 text-sm">Cole seu texto e a Inteligência Artificial irá reescrevê-lo usando apenas termos e metáforas musicais.</p>
+            </div>
+
+            <div class="mb-5">
+                <label for="textInput" class="block text-sm font-medium text-gray-700 mb-1 ml-1">Seu texto original</label>
+                <textarea id="textInput" rows="5" class="w-full px-5 py-4 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all duration-200 text-base shadow-sm resize-y" placeholder="Escreva aqui qualquer texto para ser transformado em música..." spellcheck="false"></textarea>
+            </div>
+
+            <button id="generateBtn" onclick="generateAdaptation()" class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-xl transition duration-300 shadow-md hover:shadow-lg flex items-center justify-center">
+                <span id="btnText">Transformar em Música</span>
+                <svg id="loadingIcon" class="animate-spin ml-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </button>
+
+            <!-- Container do Resultado (Adaptador) -->
+            <div id="resultContainer" class="mt-6 hidden fade-in">
+                <label class="block text-sm font-medium text-cyan-700 mb-2 ml-1 flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    Sinfonia Textual
+                </label>
+                <div class="p-5 bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-100 rounded-xl shadow-sm">
+                    <p id="phraseOutput" class="text-base text-gray-800 leading-relaxed whitespace-pre-wrap"></p>
+                </div>
+                <div class="mt-3 flex justify-end">
+                    <button id="copyBtn" onclick="copyToClipboard()" class="text-sm flex items-center text-cyan-700 hover:text-cyan-900 font-semibold transition-colors bg-cyan-100/50 px-4 py-2 rounded-lg border border-cyan-200 hover:bg-cyan-100">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                        <span id="copyText">Copiar</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Container de Erro (Adaptador) -->
+            <div id="errorContainer" class="mt-4 hidden fade-in">
+                <div class="p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg text-red-700 text-sm">
+                    <p id="errorMessage"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTEÚDO 2: MAESTRO IA (CHAT DE MÚSICA) -->
+        <div id="viewMaestro" class="flex-1 flex flex-col hidden fade-in h-full bg-gray-50">
+            <!-- Área de Mensagens -->
+            <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4 chat-scroll">
+                <!-- Mensagem de boas-vindas do Bot -->
+                <div class="flex items-start">
+                    <div class="flex-shrink-0 bg-indigo-100 rounded-full p-2 mr-3 border border-indigo-200">
+                        <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl rounded-tl-none shadow-sm border border-gray-100 max-w-[80%]">
+                        <p class="text-gray-800 text-sm">Olá! Eu sou o Maestro IA! 🎵 Sou completamente apaixonado por música. Pergunte-me sobre teoria musical, instrumentos, compositores ou acordes. Só não me pergunte sobre outras coisas, porque meu mundo é feito de notas musicais!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Indicador de Carregamento do Chat -->
+            <div id="chatLoadingIndicator" class="px-6 py-2 hidden">
+                <div class="flex items-center text-gray-400 text-sm italic">
+                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    O Maestro está a compor a resposta...
+                </div>
+            </div>
+
+            <!-- Área de Input do Chat -->
+            <div class="p-4 bg-white border-t border-gray-200">
+                <form id="chatForm" onsubmit="sendChatMessage(event)" class="flex gap-2">
+                    <input type="text" id="chatInput" class="flex-1 px-4 py-3 rounded-xl border border-gray-300 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-200 text-sm shadow-sm" placeholder="Pergunte sobre notas, ritmos, instrumentos..." autocomplete="off">
+                    <button type="submit" id="chatSendBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-xl transition duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex-shrink-0 flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+    </div>
+
+    <script>
+        // --- CONFIGURAÇÕES GERAIS ---
+        // A chave da API foi removida daqui por segurança!
+        // Agora o frontend comunica com o nosso próprio backend na pasta /api
+
+        // --- SISTEMA DE ABAS ---
+        const viewAdaptador = document.getElementById('viewAdaptador');
+        const viewMaestro = document.getElementById('viewMaestro');
+        const tabAdaptador = document.getElementById('tabAdaptador');
+        const tabMaestro = document.getElementById('tabMaestro');
+
+        function switchTab(tabName) {
+            if (tabName === 'adaptador') {
+                viewAdaptador.classList.remove('hidden');
+                viewMaestro.classList.add('hidden');
+                
+                // Estilo da aba ativa
+                tabAdaptador.className = "flex-1 py-4 px-6 text-center font-bold text-cyan-700 border-b-2 border-cyan-500 bg-white transition-colors focus:outline-none flex items-center justify-center";
+                tabMaestro.className = "flex-1 py-4 px-6 text-center font-medium text-gray-500 hover:text-indigo-600 border-b-2 border-transparent bg-gray-50 transition-colors focus:outline-none flex items-center justify-center";
+            } else {
+                viewAdaptador.classList.add('hidden');
+                viewMaestro.classList.remove('hidden');
+                
+                // Estilo da aba ativa
+                tabMaestro.className = "flex-1 py-4 px-6 text-center font-bold text-indigo-700 border-b-2 border-indigo-500 bg-white transition-colors focus:outline-none flex items-center justify-center";
+                tabAdaptador.className = "flex-1 py-4 px-6 text-center font-medium text-gray-500 hover:text-cyan-600 border-b-2 border-transparent bg-gray-50 transition-colors focus:outline-none flex items-center justify-center";
+                
+                document.getElementById('chatInput').focus();
+            }
+        }
+
+
+        // --- LÓGICA DO ADAPTADOR MUSICAL ---
+        const textInput = document.getElementById('textInput');
+        
+        textInput.addEventListener('keydown', function (e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') generateAdaptation();
+        });
+
+        async function generateAdaptation() {
+            const textToCorrect = textInput.value.trim();
+            if (!textToCorrect) {
+                alert("Por favor, digite algum texto para ser transformado.");
+                return;
+            }
+
+            const generateBtn = document.getElementById('generateBtn');
+            const btnText = document.getElementById('btnText');
+            const loadingIcon = document.getElementById('loadingIcon');
+            
+            generateBtn.disabled = true;
+            btnText.textContent = "Compondo...";
+            loadingIcon.classList.remove('hidden');
+            document.getElementById('resultContainer').classList.add('hidden');
+            document.getElementById('errorContainer').classList.add('hidden');
+
+            try {
+                // Chamamos o NOSSO backend em vez de chamar a OpenRouter diretamente
+                const response = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        "messages": [
+                            {
+                                "role": "system",
+                                "content": "Você é um escritor criativo obcecado por música. Sua função é reescrever o texto do usuário mantendo a mensagem original, mas substituindo o contexto por analogias, termos e jargões musicais (como andamento, notas, instrumentos, ritmo, sinfonia). Transforme o texto em uma verdadeira sinfonia de palavras. Retorne APENAS o texto adaptado, sem aspas, explicações ou saudações."
+                            },
+                            { "role": "user", "content": `Adapte o seguinte texto para a temática musical:\n\n${textToCorrect}` }
+                        ]
+                    })
+                });
+
+                if (!response.ok) throw new Error(`Erro de comunicação (${response.status})`);
+
+                const data = await response.json();
+                if (data.choices && data.choices.length > 0) {
+                    let correctedText = data.choices[0].message.content.trim();
+                    if (correctedText.startsWith('"') && correctedText.endsWith('"')) {
+                        correctedText = correctedText.substring(1, correctedText.length - 1);
+                    }
+                    document.getElementById('phraseOutput').textContent = correctedText;
+                    document.getElementById('resultContainer').classList.remove('hidden');
+                } else {
+                    throw new Error("Nenhuma adaptação retornada.");
+                }
+            } catch (error) {
+                document.getElementById('errorMessage').textContent = "Erro: " + error.message;
+                document.getElementById('errorContainer').classList.remove('hidden');
+            } finally {
+                generateBtn.disabled = false;
+                btnText.textContent = "Transformar em Música";
+                loadingIcon.classList.add('hidden');
+            }
+        }
+
+        function copyToClipboard() {
+            const textToCopy = document.getElementById('phraseOutput').textContent;
+            const tempInput = document.createElement("textarea");
+            tempInput.value = textToCopy;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            try {
+                document.execCommand("copy");
+                const copyText = document.getElementById('copyText');
+                const originalHTML = copyText.innerHTML;
+                copyText.innerHTML = "Copiado! ✓";
+                setTimeout(() => copyText.innerHTML = originalHTML, 2000);
+            } catch (err) {
+                alert('Copie manualmente.');
+            }
+            document.body.removeChild(tempInput);
+        }
+
+
+        // --- LÓGICA DO CHATBOT DE MÚSICA (MAESTRO IA) ---
+        
+        // Histórico de conversas (para dar contexto à IA)
+        let chatHistory = [
+            {
+                "role": "system",
+                "content": "Você é o Maestro IA, um professor de música fanático. Você AMA ensinar música, teoria musical, ritmos, instrumentos e partituras. Você DEVE se recusar terminantemente a falar sobre QUALQUER outro assunto que não seja música (como matemática, história geral, programação, correção de texto, etc). Se o usuário fugir do assunto musical, seja educado, diga que seu foco é apenas música e tente trazer o assunto de volta para alguma curiosidade musical. Responda sempre em Português do Brasil, de forma amigável, didática e inspiradora."
+            }
+        ];
+
+        async function sendChatMessage(e) {
+            e.preventDefault();
+            
+            const chatInput = document.getElementById('chatInput');
+            const message = chatInput.value.trim();
+            
+            if (!message) return;
+            
+            // 1. Adicionar mensagem do usuário na tela
+            appendMessageToUI(message, 'user');
+            chatInput.value = '';
+            
+            // 2. Adicionar ao histórico
+            chatHistory.push({ "role": "user", "content": message });
+            
+            // 3. Mostrar carregamento e bloquear input
+            setChatLoading(true);
+            
+            try {
+                // Chamamos o NOSSO backend em vez de chamar a OpenRouter diretamente
+                const response = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        "messages": chatHistory
+                    })
+                });
+
+                if (!response.ok) throw new Error(`Erro na API (${response.status})`);
+
+                const data = await response.json();
+                
+                if (data.choices && data.choices.length > 0) {
+                    const botReply = data.choices[0].message.content;
+                    
+                    // 4. Adicionar resposta ao histórico e na tela
+                    chatHistory.push({ "role": "assistant", "content": botReply });
+                    appendMessageToUI(botReply, 'bot');
+                } else {
+                    throw new Error("Sem resposta do Maestro.");
+                }
+            } catch (error) {
+                appendMessageToUI("Desculpe, meu violão desafinou (Erro de conexão). Pode tentar perguntar de novo?", 'error');
+                // Removemos a mensagem falhada do histórico para não quebrar conversas futuras
+                chatHistory.pop(); 
+            } finally {
+                setChatLoading(false);
+            }
+        }
+
+        function appendMessageToUI(text, sender) {
+            const chatMessages = document.getElementById('chatMessages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = "flex w-full fade-in " + (sender === 'user' ? "justify-end" : "justify-start");
+            
+            let innerHTML = '';
+            
+            if (sender === 'user') {
+                innerHTML = `
+                    <div class="bg-indigo-600 text-white p-3 px-5 rounded-2xl rounded-tr-none shadow-sm max-w-[80%] text-sm">
+                        ${escapeHTML(text)}
+                    </div>
+                `;
+            } else if (sender === 'bot') {
+                innerHTML = `
+                    <div class="flex-shrink-0 bg-indigo-100 rounded-full p-2 mr-3 border border-indigo-200 self-end h-10 w-10 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl rounded-tl-none shadow-sm border border-gray-100 max-w-[80%] text-sm text-gray-800 whitespace-pre-wrap">
+                        ${escapeHTML(text)}
+                    </div>
+                `;
+            } else if (sender === 'error') {
+                innerHTML = `
+                    <div class="bg-red-50 text-red-600 p-3 px-5 rounded-2xl shadow-sm text-sm border border-red-100 mx-auto">
+                        ⚠️ ${escapeHTML(text)}
+                    </div>
+                `;
+            }
+
+            msgDiv.innerHTML = innerHTML;
+            chatMessages.appendChild(msgDiv);
+            
+            // Fazer scroll automático para o fundo
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function setChatLoading(isLoading) {
+            const chatInput = document.getElementById('chatInput');
+            const chatSendBtn = document.getElementById('chatSendBtn');
+            const loadingInd = document.getElementById('chatLoadingIndicator');
+            
+            chatInput.disabled = isLoading;
+            chatSendBtn.disabled = isLoading;
+            
+            if (isLoading) {
+                loadingInd.classList.remove('hidden');
+                chatSendBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                loadingInd.classList.add('hidden');
+                chatSendBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                chatInput.focus();
+            }
+        }
+
+        // Função utilitária para evitar injeção de HTML no chat
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag])
+            );
+        }
+
+    </script>
+</body>
+</html>
